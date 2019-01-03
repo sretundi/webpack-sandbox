@@ -1,4 +1,5 @@
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const path = require('path');
@@ -14,13 +15,14 @@ const commonConfig = merge([
         entry: './src/index.js',
         output: {
             path: path.resolve(__dirname, './dist'),
-            filename: 'index_bundle.js',
+            filename: '[name].bundle.js',
+            chunkFilename: '[name].bundle.js'
         },
         plugins: [
+            new CleanWebpackPlugin(['dist']),
             new HtmlWebpackPlugin({
                 title: "Webpack demo",
                 template: "./templates/index.html",
-                filename: "./index.html"
             }),
             new webpack.HotModuleReplacementPlugin(),
         ],
@@ -41,7 +43,21 @@ const commonConfig = merge([
     }
 ]);
 
-const productionConfig = merge([]);
+const productionConfig = merge([
+    {
+        optimization: {
+            splitChunks: {
+                cacheGroups: {
+                    commons: {
+                        test: /[\\/]node_modules[\\/]/,
+                        name: "vendor",
+                        chunks: "initial"
+                    }
+                }
+            }
+        }
+    }
+]);
 
 const developmentConfig = merge([
     webpackParts.devServer()
